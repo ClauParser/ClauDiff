@@ -30,8 +30,3 @@
 *.exe
 *.out
 *.app
-
-# visual studio
-*.vcxproj.filters 
-*.vcxproj 
-*.sln
