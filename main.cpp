@@ -3,6 +3,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <execution> // for parallel sort.
 
 #include <map>
 
@@ -99,6 +100,9 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 	std::string str1;
 	std::string str2;
 
+
+	std::string same_value;
+
 	int line = 0;
 
 	while (!x.is_end() && !y.is_end()) {
@@ -119,8 +123,9 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 
 
 				// not_use?
-
-				result.push_back({ line, { 0, _x.get_string() } });
+				if (!onlyChange) {
+					result.push_back({ line, { 0, _x.get_string() } });
+				}
 
 				x.next();
 				y.next();
@@ -141,7 +146,6 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 				}
 
 				{
-					std::string same_value;
 					int turn = 1; // 1 -> -1 -> 1 -> -1 ...
 					bool pass = false;
 
@@ -195,7 +199,6 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 
 					// found same value,
 					if (pass) {
-						std::string temp;
 						
 						int _line = line;
 
@@ -242,7 +245,7 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 
 	// delete -
 	if (!x.is_end()) {
-		std::string temp;
+		temp.clear();
 
 		while (!x.is_end()) {
 			temp += x.get_string() + " ";
@@ -266,8 +269,7 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 	}
 	// added +
 	if (!y.is_end()) {
-		std::string temp;
-
+		temp.clear();
 		while (!y.is_end()) {
 			temp += y.get_string() + " ";
 
@@ -338,14 +340,15 @@ int main(int argc, char* argv[])
 
 	Out << "```diff" << "\n";
 
-	std::vector<std::pair<int, std::pair<int/* +1, -1 */, std::string>>> result = diff(&beforeUT, &afterUT);
+	std::vector<std::pair<int, std::pair<int/* +1, -1 */, std::string>>> result = diff(&beforeUT, &afterUT, false);
 
-
-	std::stable_sort(result.begin(), result.end(), Comp());
-
+	// parallel sorting.
+	std::stable_sort(std::execution::par, result.begin(), result.end(), Comp());
+	
+	int chk = 0;
 	int count = 0;
-	int state = 0;
 	for (size_t i = 0; i < result.size(); ++i) {
+		int state = 0;
 
 		if (i > 0 && result[i - 1].second.first > 0 && result[i].second.first > 0) {
 			state = 1;
@@ -372,6 +375,7 @@ int main(int argc, char* argv[])
 			else {
 				Out << result[i].second.second << " ";
 			}
+			chk = 1;
 		}
 		else if (result[i].second.first < 0) {
 			if (state == 0) {
@@ -380,8 +384,13 @@ int main(int argc, char* argv[])
 			else {
 				Out << result[i].second.second << " ";
 			}
+			chk = 1;
 		}
 		else {
+			if (chk) {
+				Out << "\n";
+				chk = 0;
+			}
 			Out << result[i].second.second << " ";
 		}
 	}
