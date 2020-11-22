@@ -4,24 +4,12 @@ save_game="Russia1947_05_09.eu4"
 player="RUS"
 savegame_versions={
 	"1.18.1.0"
-	"1.18.2.0"
+	"1.18.2.0" ddd
 	"1.18.3.0"
 	"1.18.4.0"
-	"1.19.1.0"
 }
-dlc_enabled={
-	"Art of War"
-	"Common Sense"
-	"Conquest of Paradise"
-	"El Dorado"
-	"Mare Nostrum"
-	"Res Publica"
-	"Rights of Man"
-	"The Cossacks"
-	"Wealth of Nations"
-}
-multi_player=no
-not_observer=yes
+multi_players=no
+not_observer=no
 used_client_names={
 	"French Brazil"
 	"British West Indies"
