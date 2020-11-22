@@ -1,7 +1,7 @@
 # ClauDiff
 Diff for valid ClauData.
 
-# github? version.
+# Github? Version.
 ![alt text](claudiff_1.png) 
 
 # My Version..
