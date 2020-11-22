@@ -1,6 +1,8 @@
 # ClauDiff
 Diff for valid ClauData.
 
+# github? version.
+![alt text](claudiff_1.png) 
 
 # My Version..
 ```diff
@@ -22,6 +24,3 @@ used_client_names { "French Brazil" "British West Indies" "Castilian West Indies
 "Portuguese Mexico" "French Peru" "New Norway" "Norwegian Louisiana" "Oregon" 
 "Alaska" "Malayan Columbia" }
 ```
-
-# github? version.
-![alt text](claudiff_1.png) 
