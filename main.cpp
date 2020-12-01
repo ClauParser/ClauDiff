@@ -434,6 +434,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 					int turn = 1; // 1 -> -1 -> 1 -> -1 ...
 					bool pass = false;
 					int state = 0;
+					int state2 = 0;
 
 					while (!__x.is_end() && !__y.is_end()) {
 						if (turn == 1) {
@@ -447,6 +448,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 								turn *= -1;
 								continue;
 							}
+							state = 0;
 
 							before_map.insert({ __x.get_string(), count__x });
 
@@ -455,6 +457,13 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 								pass = true;
 								same_value = __x.get_string();
 								count__y = after_map.find(__x.get_string())->second;
+
+								if (__y.get_type() == clau_parser::ValueType::key || __y.get_type() == clau_parser::ValueType::value) {
+								}
+								else {
+									state2 = 2;
+								}
+
 								break;
 							}
 						}
@@ -462,15 +471,16 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 							__y.next();
 							count__y++;
 
-							if (__x.get_type() == clau_parser::ValueType::key || __x.get_type() == clau_parser::ValueType::value) {
+							if (__y.get_type() == clau_parser::ValueType::key || __y.get_type() == clau_parser::ValueType::value) {
 							}
 							else
 							{
-								state = 2;
+								state2 = 2;
 
 								turn *= -1;
 								continue;
 							}
+							state2 = 0;
 
 							after_map.insert({ __y.get_string(), count__y });
 
@@ -479,6 +489,14 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 								pass = true;
 								same_value = __y.get_string();
 								count__x = after_map.find(__y.get_string())->second;
+
+
+								if (__x.get_type() == clau_parser::ValueType::key || __x.get_type() == clau_parser::ValueType::value) {
+								}
+								else {
+									state = 1;
+								}
+
 								break;
 							}
 						}
@@ -488,103 +506,163 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 
 					// found same value,
 					if (pass) {
-						if (state == 1) {
-							before_x = x;
-							x.next();
 							
-							state = 0;
-						}
-						else if (state == 2) {
-							before_y = y;
-							y.next();
+						before_x = x;
+						if (state == 1) {
+
+							x.next();
 
 							state = 0;
+						}
+						before_y = y;
+						if (state2 == 2) {
+							y.next();
+
+							state2 = 0;
 						}
 
 						temp_x = x;
 						temp_y = y;
+
+
+						//std::cout << "----------\n";
 
 				//		result.push_back(DiffResult::MakeStart(x, y));
 
 						line++;
 
 						int state = 0;
-						int state2 = 0;
 
 						while ((temp = x.get_string()) != same_value) {
-							if (state2 == 0) {
-								if (x.get_type() == clau_parser::ValueType::value) {
-									auto name = ((clau_parser::ItemType<std::string>*)x.get_now())->GetName();
-									if (!name.empty()) {
-										result.emplace_back(line, before_x, temp_y, -1, name);
-									}
-								}
-
-								state2 = 1;
-							}
-
-							state = 0;
 
 							result.emplace_back(line, x, temp_y, -1, temp);
-							
-							if (x.get_type() == clau_parser::ValueType::key) {
-								state = 1;
-							}
-							
-							x.next();
-						}
 
-						if (state == 1) {
-							temp_ = x;
-							
-							if (temp_.get_type() == clau_parser::ValueType::value) {
-								result.emplace_back(line, x, temp_, -1, x.get_string()); 
-					
+							before_x = x;
+
+							if (x.get_type() == clau_parser::ValueType::key) {
+								x.next();
+								if (x.get_type() == clau_parser::ValueType::value) {
+									before_x = x;
+
+									if (x.get_string() == same_value) {
+										x.next();
+										break;
+									}
+
+									x.next();
+								}
+							}
+							else {
 								x.next();
 							}
-							state = 0;
+							
 						}
 
 						state = 0;
-						state2 = 0;
+
+						temp_x = before_x;
+
 						while ((temp = y.get_string()) != same_value) {
-							if (state2 == 0) {
-								if (y.get_type() == clau_parser::ValueType::value) {
-									auto name = ((clau_parser::ItemType<std::string>*)y.get_now())->GetName();
-									if (!name.empty()) {
-										result.emplace_back(line, temp_x, before_y, +1, name);
-									}
-								}
-
-								state2 = 1;
-							}
-
-							state = 0;
+	
 							result.emplace_back(line, temp_x, y, +1, temp);
-							
+
+
+							before_y = y;
+
+
 							if (y.get_type() == clau_parser::ValueType::key) {
-								state = 1;
+								y.next();
+								if (y.get_type() == clau_parser::ValueType::value) {
+									before_y = y;
+
+									if (y.get_string() == same_value) {
+										y.next();
+										break;
+									}
+									
+									y.next();
+								}
 							}
-
-
-							y.next();
-							
-						}
-						if (state == 1) {
-							temp_ = y;
-
-							if (temp_.get_type() == clau_parser::ValueType::value) {
-								result.emplace_back(line, y, temp_, +1, y.get_string());
-
+							else {
 								y.next();
 							}
 						}
+
+					//	std::cout << "----------\n";
+
 				//		result.push_back(DiffResult::MakeEnd(x, y));
 					}
 				}
 			}
 		}
 	}
+
+
+	auto _result = std::move(result);
+	result.clear();
+	
+
+	for (size_t i = 0; i < _result.size(); ++i) {
+		if (_result[i].type > 0) {
+			if (_result[i].y.get_type() == clau_parser::ValueType::key) {
+				auto y = _result[i].y;
+
+				if (!y.get_string().empty()) {
+					result.emplace_back(_result[i].line, _result[i].x, y, +1, y.get_string());
+				}
+				y.next();
+				if (y.get_type() == clau_parser::ValueType::value) {
+					result.emplace_back(_result[i].line, _result[i].x, y, +1, y.get_string());
+				}
+			}
+			else if (_result[i].y.get_type() == clau_parser::ValueType::value) {
+				auto y = _result[i].y;
+
+				if (!y.get_now()->GetName().empty()) {
+					auto temp = y;
+					temp.with_key();
+					temp.next();
+
+					result.emplace_back(_result[i].line, _result[i].x, temp, +1, y.get_now()->GetName());
+				}
+				result.emplace_back(_result[i].line, _result[i].x, y, +1, y.get_string());
+			}
+			else {
+				result.emplace_back(_result[i].line, _result[i].x, _result[i].y, +1, _result[i].str);
+			}
+		}
+		else if (_result[i].type < 0) {
+			if (_result[i].x.get_type() == clau_parser::ValueType::key) {
+				auto x = _result[i].x;
+
+				if (!x.get_string().empty()) {
+					result.emplace_back(_result[i].line, x, _result[i].y, -1, x.get_string());
+				}
+				x.next();
+				if (x.get_type() == clau_parser::ValueType::value) {
+					result.emplace_back(_result[i].line, x, _result[i].y, -1, x.get_string());
+				}
+			}
+			else if (_result[i].x.get_type() == clau_parser::ValueType::value) {
+				auto x = _result[i].x;
+
+				if (!x.get_now()->GetName().empty()) {
+					auto temp = x;
+					temp.with_key();
+					temp.next();
+
+					result.emplace_back(_result[i].line, temp, _result[i].y, -1, x.get_now()->GetName());
+				}
+				result.emplace_back(_result[i].line, x, _result[i].y, -1, x.get_string());
+			}
+			else {
+				result.emplace_back(_result[i].line, _result[i].x, _result[i].y, -1, _result[i].str);
+			}
+		}
+	}
+
+	_result.clear();
+
 
 	//result.push_back(DiffResult::MakeStart(x, y));
 	++line;
@@ -627,51 +705,43 @@ clau_parser::UserType* diff_patch(clau_parser::UserType* ut, std::vector<DiffRes
 
 	clau_parser::Maker maker;
 	clau_parser::ClauParserTraverser now(ut);
-	clau_parser::ClauParserTraverser temp(ut);
+	clau_parser::ClauParserTraverser before(ut);
 
 	int count = 0;
 
 	for (size_t i = 0; i < diff.size(); ++i) {
 		auto iter = diff[i];
-		
+		auto len = iter.x.get_no();
+		//
+		//std::cout << now.get_string() << " " << (int)now.get_no() << " " << iter.str << " " << iter.x.get_no() << "\n";
+
 		while (now.get_no() < iter.x.get_no()) {
 
-				if (now.get_type() == clau_parser::ValueType::key) {
-					key = now.get_string();
-				}
-
-				if (now.is_now_it()) {
-					if (now.get_type() == clau_parser::ValueType::value) {
-						maker.NewItem(std::move((*static_cast<clau_parser::ItemType<std::string>*>(now.get_now()))));
-					}
-				}
-				if (now.get_type() == clau_parser::ValueType::container) {
-					maker.NewGroup(key);
-					key.clear();
-				}
-
-				if (now.get_type() == clau_parser::ValueType::end_of_container) {
-					maker.EndGroup();
-				}
-
-				now.next();
+			if (now.get_type() == clau_parser::ValueType::key) {
+				key = now.get_string();
 			}
 
-		std::cout << now.get_string() << " " << (int)now.get_type() << " " << iter.str << " " << iter.type << "\n";
+			if (now.get_type() == clau_parser::ValueType::value) {
+				maker.NewItem(std::move((*static_cast<clau_parser::ItemType<std::string>*>(now.get_now()))));
+			}
+
+			if (now.get_type() == clau_parser::ValueType::container) {
+				maker.NewGroup(key);
+				key.clear();
+			}
+
+			if (now.get_type() == clau_parser::ValueType::end_of_container) {
+				maker.EndGroup();
+			}
+
+			now.next();
+		}
+
+		//std::cout << now.get_string() << " " << (int)now.get_type() << " " << iter.str << " " << iter.type << "\n";
 
 		// REMOVE
 		if (iter.type < 0) {
-
-			{
-				if (now.get_type() == clau_parser::ValueType::container) {
-					count++;
-				}
-				else if (now.get_type() == clau_parser::ValueType::end_of_container) {
-					count--;
-				}
-
-				now.next();
-			}
+			now.next();
 		}
 		else if (iter.type == 0) {
 			// nothing.
@@ -679,30 +749,29 @@ clau_parser::UserType* diff_patch(clau_parser::UserType* ut, std::vector<DiffRes
 		// ADD
 		else {
 
-			while (count < 0) {
-				maker.EndGroup();
-				count++;
-			}
 			if (iter.y.get_type() == clau_parser::ValueType::key) {
 				key = iter.str;
 			}
 
 			if (iter.y.get_type() == clau_parser::ValueType::value) {
+
 				maker.NewItem(key, iter.str);
-				
+
 				key.clear();
 			}
 			else if (iter.y.get_type() == clau_parser::ValueType::container) {
 				maker.NewGroup(key);
 				key.clear();
-				
+
 			}
 
 			if (iter.y.get_type() == clau_parser::ValueType::end_of_container) {
 				maker.EndGroup();
 			}
 		}
+
 	}
+
 
 
 	while (!now.is_end()) {
@@ -757,34 +826,35 @@ int main(int argc, char* argv[])
 		clau_parser::LoadData::LoadDataFromFile(before_file, beforeUT, 0, 0); // 1 vs 0 - scan.. different algorithms?
 		clau_parser::LoadData::LoadDataFromFile(after_file, afterUT, 0, 0);
 
-
+		int a = clock();
 		auto result = diff2(&beforeUT, &afterUT, false);
 
-		for (auto& x : result) {
-			std::cout << x.type << " " << x.str << "\n";
-		}
-
+	//	for (auto& x : result) {
+	//		std::cout << x.type << " " << x.str << "\n";
+	//	}
+		int b = clock();
 		auto result2 = diff_patch(&beforeUT, result);
-
+		int c = clock();
 		
 		{
-			std::ofstream file("output.eu4");
-			result2->Save1(file);
-			file.close();
+	//		std::ofstream file("output.eu4");
+	//		result2->Save1(file);
+	//		file.close();
 		}
 
 		
 		std::cout << "after patch...\n";
 
 		chk = true;
-
+		int d = clock();
 		result = diff2(result2, &afterUT, false);
-
+		int e = clock();
 		for (auto& x : result) {
 			std::cout << x.type << " " << x.str << "\n";
 		}
+		
 
-		std::cout << "nothing?\n";
+		std::cout << b - a << "ms\n" << c - b << "ms\n" << e - d << "ms\n";
 
 		return 0;
 	}
