@@ -24,3 +24,4 @@ used_client_names { "French Brazil" "British West Indies" "Castilian West Indies
 "Portuguese Mexico" "French Peru" "New Norway" "Norwegian Louisiana" "Oregon" 
 "Alaska" "Malayan Columbia" }
 ```
+# ClauParser, ClauDiff, and ClauPatch
