@@ -1,5 +1,5 @@
 # ClauDiff
-Diff for valid ClauData.
+Diff and patch for valid ClauData.
 
 # Github? Version.
 ![alt text](claudiff_1.png) 
