@@ -14,7 +14,7 @@ class _Out {
 private:
 	std::string LOG_FILE_NAME = "clautext_log.txt";
 	std::ofstream outFile;
-			
+
 	long policy = 0; // default 0 - only console, 1 - only file, 2 - file and console. else - none
 public:
 	_Out& operator = (const _Out& other) {
@@ -49,7 +49,7 @@ public:
 public:
 	_Out(std::string log_file_name = "log.txt", long policy = 0)
 		: LOG_FILE_NAME(log_file_name), policy(policy) {
-		
+
 	}
 	~_Out() {
 		if (outFile.is_open()) {
@@ -74,7 +74,7 @@ _Out Out;
 
 
 std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau_parser::UserType* before, clau_parser::UserType* after,
-			bool onlyChange = false) {
+	bool onlyChange = false) {
 	std::vector<std::pair<int, std::pair<int/* > 0 , < 0 */, std::string>>> result;
 
 	std::queue<std::pair<int, std::pair<int, std::string>>> plus_result;
@@ -88,7 +88,7 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 
 	clau_parser::ClauParserTraverser x = iter_before;
 	clau_parser::ClauParserTraverser y = iter_after;
-	
+
 	clau_parser::ClauParserTraverser _x = x;
 	clau_parser::ClauParserTraverser _y = y;
 
@@ -106,7 +106,7 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 	int line = 0;
 
 	while (!x.is_end() && !y.is_end()) {
-				
+
 		line++;
 
 		str1.clear();
@@ -199,11 +199,11 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 
 					// found same value,
 					if (pass) {
-						
+
 						int _line = line;
 
 						while ((temp = x.get_string()) != same_value) {
-							
+
 							if (!plus_result.empty()) {
 								if (temp != plus_result.front().second.second) {
 									minus_result.push({ _line, { -1, temp } });
@@ -222,7 +222,7 @@ std::vector<std::pair<int, std::pair<int/* > 0, < 0 */, std::string>>> diff(clau
 						_line = line;
 
 						while ((temp = y.get_string()) != same_value) {
-							
+
 							if (!minus_result.empty()) {
 								if (temp != minus_result.front().second.second) {
 									plus_result.push({ _line, { 1, temp } });
@@ -311,7 +311,7 @@ class DiffResult {
 public:
 	bool now_start = false;
 	bool now_end = false;
-	
+
 	int line = 0;
 
 	clau_parser::ClauParserTraverser x;
@@ -322,7 +322,7 @@ public:
 	std::string str; // key or value.
 
 public:
-	DiffResult(int line, const clau_parser::ClauParserTraverser& x, const clau_parser::ClauParserTraverser& y, int type, const std::string& str) 
+	DiffResult(int line, const clau_parser::ClauParserTraverser& x, const clau_parser::ClauParserTraverser& y, int type, const std::string& str)
 		: line(line), x(x), y(y), type(type), str(str)
 	{
 		//
@@ -358,12 +358,8 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 	clau_parser::ClauParserTraverser x = iter_before;
 	clau_parser::ClauParserTraverser y = iter_after;
 
-	clau_parser::ClauParserTraverser _x = x;
-	clau_parser::ClauParserTraverser _y = y;
-
-
-	clau_parser::ClauParserTraverser __x = _x;
-	clau_parser::ClauParserTraverser __y = _y;
+	clau_parser::ClauParserTraverser __x = x;
+	clau_parser::ClauParserTraverser __y = y;
 
 	clau_parser::ClauParserTraverser temp_x = x;
 	clau_parser::ClauParserTraverser temp_y = y;
@@ -372,7 +368,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 
 	clau_parser::ClauParserTraverser before_x = x;
 	clau_parser::ClauParserTraverser before_y = y;
-	
+
 	std::string temp;
 	std::string str1;
 	std::string str2;
@@ -381,7 +377,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 	std::string same_value;
 
 	int line = 0;
-	
+
 	int state = 0;
 
 	while (!x.is_end() && !y.is_end()) {
@@ -393,17 +389,12 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 		after_map.clear();
 
 		{
-			_x = x;
-			_y = y;
 
 
-			if (_x.get_type() == _y.get_type() && _x.get_string() == _y.get_string()) {
-				before_x = x;
-				before_y = y;
-				
+			if (x.get_type() == y.get_type() && x.get_string() == y.get_string()) {
 				x.next();
 				y.next();
-				
+
 
 				continue;
 			}
@@ -411,12 +402,12 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 
 			//if (chk)
 			{
-			//	std::cout << "chkwww" << x.get_string() << " " << y.get_string() << "\n";
+				//	std::cout << "chkwww" << x.get_string() << " " << y.get_string() << "\n";
 			}
 
 			{
-				__x = _x;
-				__y = _y;
+				__x = x;
+				__y = y;
 
 				size_t count__x = 0;
 				size_t count__y = 0;
@@ -506,7 +497,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 
 					// found same value,
 					if (pass) {
-							
+
 						before_x = x;
 						if (state == 1) {
 
@@ -555,7 +546,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 							else {
 								x.next();
 							}
-							
+
 						}
 
 						state = 0;
@@ -563,7 +554,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 						temp_x = before_x;
 
 						while ((temp = y.get_string()) != same_value) {
-	
+
 							result.emplace_back(line, temp_x, y, +1, temp);
 
 
@@ -579,7 +570,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 										y.next();
 										break;
 									}
-									
+
 									y.next();
 								}
 							}
@@ -588,9 +579,9 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 							}
 						}
 
-					//	std::cout << "----------\n";
+						//	std::cout << "----------\n";
 
-				//		result.push_back(DiffResult::MakeEnd(x, y));
+					//		result.push_back(DiffResult::MakeEnd(x, y));
 					}
 				}
 			}
@@ -600,7 +591,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 
 	auto _result = std::move(result);
 	result.clear();
-	
+
 
 	for (size_t i = 0; i < _result.size(); ++i) {
 		if (_result[i].type > 0) {
@@ -705,7 +696,6 @@ clau_parser::UserType* diff_patch(clau_parser::UserType* ut, std::vector<DiffRes
 
 	clau_parser::Maker maker;
 	clau_parser::ClauParserTraverser now(ut);
-	clau_parser::ClauParserTraverser before(ut);
 
 	int count = 0;
 
@@ -789,7 +779,7 @@ clau_parser::UserType* diff_patch(clau_parser::UserType* ut, std::vector<DiffRes
 			maker.NewGroup(key);
 			key.clear();
 		}
-		
+
 
 		if (now.get_type() == clau_parser::ValueType::end_of_container) {
 			maker.EndGroup();
@@ -801,6 +791,161 @@ clau_parser::UserType* diff_patch(clau_parser::UserType* ut, std::vector<DiffRes
 
 	return maker.Get();
 }
+clau_parser::UserType* diff_patch2(clau_parser::UserType* ut, std::vector<DiffResult>& diff) {
+
+	if (diff.empty()) {
+		return nullptr;
+	}
+
+	std::string key;
+
+	clau_parser::ClauParserTraverser now(ut);
+
+	std::string str;
+	
+	int count = 0;
+
+	for (size_t i = 0; i < diff.size(); ++i) {
+		auto iter = diff[i];
+		auto len = iter.x.get_no();
+		
+		//std::cout << now.get_string() << " " << (int)now.get_no() << " " << iter.str << " " << iter.x.get_no() << "\n";
+
+		while (now.get_no() < iter.x.get_no()) {
+
+			if (now.get_type() == clau_parser::ValueType::key) {
+				key = now.get_string();
+				str += " ";
+				str += key;
+			}
+
+			if (now.get_type() == clau_parser::ValueType::value) {
+				if (key.empty()) {
+					str += " ";
+					str += now.get_string();
+				}
+				else {
+					str += " = ";
+					str += now.get_string();
+				}
+				key.clear();
+			}
+
+			if (now.get_type() == clau_parser::ValueType::container) {
+				if (key.empty()) {
+					str += " { \n";
+				}
+				else {
+					str += " = { \n";
+				}
+
+				key.clear();
+			}
+
+			if (now.get_type() == clau_parser::ValueType::end_of_container) {
+				str += " } \n ";
+			}
+
+			now.next();
+		}
+
+		//std::cout << now.get_string() << " " << (int)now.get_type() << " " << iter.str << " " << iter.type << "\n";
+
+		// REMOVE
+		if (iter.type < 0) {
+			now.next();
+		}
+		else if (iter.type == 0) {
+			// nothing.
+		}
+		// ADD
+		else {
+
+			if (iter.y.get_type() == clau_parser::ValueType::key) {
+				key = iter.str;
+
+				str += " ";
+				str += key;
+			}
+
+			if (iter.y.get_type() == clau_parser::ValueType::value) {
+				if (key.empty()) {
+					str += " ";
+					str += iter.y.get_string();
+				}
+				else {
+					str += " = ";
+					str += iter.y.get_string();
+				}
+				
+				key.clear();
+			}
+			else if (iter.y.get_type() == clau_parser::ValueType::container) {
+				if (key.empty()) {
+					str += " { \n ";
+				}
+				else {
+					str += " = { \n ";
+				}
+
+				key.clear();
+
+			}
+
+			if (iter.y.get_type() == clau_parser::ValueType::end_of_container) {
+				str += " } \n";
+			}
+		}
+
+	}
+
+
+
+	while (!now.is_end()) {
+
+		if (now.get_type() == clau_parser::ValueType::key) {
+			key = now.get_string();
+			str += " ";
+			str += key;
+		}
+
+		if (now.get_type() == clau_parser::ValueType::value) {
+			if (key.empty()) {
+				str += " ";
+				str += now.get_string();
+			}
+			else {
+				str += " = ";
+				str += now.get_string();
+			}
+			key.clear();
+		}
+
+		if (now.get_type() == clau_parser::ValueType::container) {
+			if (key.empty()) {
+				str += " { \n";
+			}
+			else {
+				str += " = { \n";
+			}
+
+			key.clear();
+		}
+
+		if (now.get_type() == clau_parser::ValueType::end_of_container) {
+			str += " } \n ";
+		}
+
+		now.next();
+	}
+	
+	clau_parser::UserType* result = new clau_parser::UserType();
+	
+	clau_parser::LoadData::LoadDataFromString(&str, *result, 0, 0);
+
+	return result;
+}
+
 
 
 class Comp {
@@ -829,40 +974,47 @@ int main(int argc, char* argv[])
 		int a = clock();
 		auto result = diff2(&beforeUT, &afterUT, false);
 
-	//	for (auto& x : result) {
-	//		std::cout << x.type << " " << x.str << "\n";
-	//	}
+			//for (auto& x : result) {
+			//	std::cout << x.type << " " << x.str << "\n";
+			//}
+
 		int b = clock();
-		auto result2 = diff_patch(&beforeUT, result);
+		clau_parser::UserType* result2; // = diff_patch(&beforeUT, result);
 		int c = clock();
-		
+	//	delete result2;
 		{
-	//		std::ofstream file("output.eu4");
-	//		result2->Save1(file);
-	//		file.close();
+			int b = clock();
+			result2 = diff_patch2(&beforeUT, result);
+			int c = clock();
+			std::cout << c - b << "ms\n";
+		}
+		{
+			//		std::ofstream file("output.eu4");
+			//		result2->Save1(file);
+			//		file.close();
 		}
 
-		
+
 		std::cout << "after patch...\n";
 
 		chk = true;
 		int d = clock();
-		result = diff2(result2, &afterUT, false);
+		//result = diff2(result2, &afterUT, false);
 		int e = clock();
-		for (auto& x : result) {
-			std::cout << x.type << " " << x.str << "\n";
-		}
+		//for (auto& x : result) {
+		//	std::cout << x.type << " " << x.str << "\n";
+		//}
+		//std::cout << b - a << "ms\n" << c - b << "ms\n" << e - d << "ms\n";
+
+		delete result2;
 		
-
-		std::cout << b - a << "ms\n" << c - b << "ms\n" << e - d << "ms\n";
-
 		return 0;
 	}
 
 	if (argc != 3) {
 		return 1;
 	}
-	
+
 	std::string before_file = argv[1];
 	std::string after_file = argv[2];
 
@@ -885,7 +1037,7 @@ int main(int argc, char* argv[])
 
 	// parallel sorting.
 	std::stable_sort(std::execution::par, result.begin(), result.end(), Comp());
-	
+
 	int chk = 0;
 	int count = 0;
 	for (size_t i = 0; i < result.size(); ++i) {
@@ -907,7 +1059,7 @@ int main(int argc, char* argv[])
 
 			state = 0;
 		}
-		
+
 		//Out << result[i].first << " ";
 		if (result[i].second.first > 0) {
 			if (state == 0) {
