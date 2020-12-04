@@ -402,7 +402,7 @@ std::vector<DiffResult> diff2(clau_parser::UserType* before, clau_parser::UserTy
 
 			//if (chk)
 			{
-				//	std::cout << "chkwww" << x.get_string() << " " << y.get_string() << "\n";
+				//std::cout << "chkwww" << x.get_string()  << " " << y.get_string() << "\n";
 			}
 
 			{
@@ -791,6 +791,7 @@ clau_parser::UserType* diff_patch(clau_parser::UserType* ut, std::vector<DiffRes
 
 	return maker.Get();
 }
+
 clau_parser::UserType* diff_patch2(clau_parser::UserType* ut, std::vector<DiffResult>& diff) {
 
 	if (diff.empty()) {
@@ -802,13 +803,13 @@ clau_parser::UserType* diff_patch2(clau_parser::UserType* ut, std::vector<DiffRe
 	clau_parser::ClauParserTraverser now(ut);
 
 	std::string str;
-	
+
 	int count = 0;
 
 	for (size_t i = 0; i < diff.size(); ++i) {
 		auto iter = diff[i];
 		auto len = iter.x.get_no();
-		
+
 		//std::cout << now.get_string() << " " << (int)now.get_no() << " " << iter.str << " " << iter.x.get_no() << "\n";
 
 		while (now.get_no() < iter.x.get_no()) {
@@ -877,7 +878,7 @@ clau_parser::UserType* diff_patch2(clau_parser::UserType* ut, std::vector<DiffRe
 					str += " = ";
 					str += iter.y.get_string();
 				}
-				
+
 				key.clear();
 			}
 			else if (iter.y.get_type() == clau_parser::ValueType::container) {
@@ -938,14 +939,74 @@ clau_parser::UserType* diff_patch2(clau_parser::UserType* ut, std::vector<DiffRe
 
 		now.next();
 	}
-	
 	clau_parser::UserType* result = new clau_parser::UserType();
-	
+
 	clau_parser::LoadData::LoadDataFromString(&str, *result, 0, 0);
 
 	return result;
 }
 
+
+clau_parser::UserType* diff_unpatch(clau_parser::UserType* ut, std::vector<DiffResult>& diff) {
+	
+	if (diff.empty()) {
+		return nullptr;
+	}
+	std::vector<DiffResult> table;
+
+	clau_parser::ClauParserTraverser iter(diff[0].y);
+	clau_parser::ClauParserTraverser temp(diff[0].y);
+	
+	long long before_y_no = -1;
+
+	for (size_t i = 0; i < diff.size(); ++i) {
+		table.push_back(diff[i]);
+
+		table[i].type = table[i].type * -1;
+		
+		bool pass = false;
+		if (i > 0) {
+			if (table[i].type > 0 && table[i - 1].type > 0) {
+				if (iter.get_no() == before_y_no) {
+					temp.next();
+					table[i].y = temp;
+					pass = true;
+				}
+			}
+		}
+
+		if (!pass) {
+			temp = diff[i].y;
+			iter = diff[i].y;
+		}
+
+		if (diff[i].type > 0) {
+			before_y_no = diff[i].y.get_no();
+		}
+		else {
+			before_y_no = -1;
+		}
+
+		std::swap(table[i].x, table[i].y);
+	}
+
+	
+	std::stable_sort(table.begin(), table.end(), [](const DiffResult& x, const DiffResult& y) {
+		if (x.line == y.line) {
+			return x.type < y.type;
+		}
+		return x.line < y.line;
+		});
+	
+	
+
+	//for (int i = 0; i < table.size(); ++i) {
+	//	std::cout << table[i].type << " " << table[i].x.get_string() << " " << table[i].y.get_string() << "\n";
+	//}
+	
+
+	return diff_patch2(ut, table);
+}
 
 
 class Comp {
@@ -974,14 +1035,14 @@ int main(int argc, char* argv[])
 		int a = clock();
 		auto result = diff2(&beforeUT, &afterUT, false);
 
-			//for (auto& x : result) {
-			//	std::cout << x.type << " " << x.str << "\n";
-			//}
+			for (auto& x : result) {
+				std::cout << x.type << " " << x.str << "\n";
+			}
 
 		int b = clock();
-		clau_parser::UserType* result2; // = diff_patch(&beforeUT, result);
+		clau_parser::UserType* result2 = diff_patch(&beforeUT, result);
 		int c = clock();
-	//	delete result2;
+		delete result2;
 		{
 			int b = clock();
 			result2 = diff_patch2(&beforeUT, result);
@@ -999,15 +1060,36 @@ int main(int argc, char* argv[])
 
 		chk = true;
 		int d = clock();
-		//result = diff2(result2, &afterUT, false);
+		auto result3 = diff2(result2, &afterUT, false);
 		int e = clock();
-		//for (auto& x : result) {
-		//	std::cout << x.type << " " << x.str << "\n";
-		//}
-		//std::cout << b - a << "ms\n" << c - b << "ms\n" << e - d << "ms\n";
+		for (auto& x : result3) {
+			std::cout << x.type << " " << x.str << "\n";
+		}
+		std::cout << b - a << "ms\n" << c - b << "ms\n" << e - d << "ms\n";
+
+		d = clock();
+		auto z = diff_unpatch(result2, result);
+		auto result4 = diff2(z,  &beforeUT);
+		for (auto& x : result4) {
+			std::cout << x.type << " " << x.str << "\n";
+		}
+		e = clock();
+		std::cout << e - d << "ms\n";
 
 		delete result2;
-		
+
+
+		//{
+		//			std::ofstream file("output2.eu4");
+		//			z->Save1(file);
+		//			file.close();
+		//}
+
+		delete z;
+
+
+		std::cout << "end\n";
+
 		return 0;
 	}
 
